@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Extensions.Options;
+using partycli.Options;
+using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -7,20 +9,29 @@ namespace partycli.Services.Server
     public class ServerService : IServerService
     {
         private static readonly HttpClient client = new HttpClient();
+        private const string SERVERS_ENDPOINT = "/v1/servers?filters[servers_technologies][id]=35&filters[country_id]=";
+        private const string SERVERS_BY_COUNTRY = "/v1/servers?filters[servers_technologies][id]=";
+
+        private readonly string _baseUrl;
+
+        public ServerService(IOptions<ApiSettings> apiSettings)
+        {
+            _baseUrl = apiSettings.Value.NordVpnBaseUri;
+        }
 
         public async Task<string> GetAllServersListAsync()
         {
-            return await SendGetRequestAsync("https://api.nordvpn.com/v1/servers?filters[servers_technologies][id]=35&filters[country_id]=", null);
+            return await SendGetRequestAsync(_baseUrl + SERVERS_ENDPOINT, null);
         }
 
         public async Task<string> GetAllServerByCountryListAsync(int countryId)
         {
-            return await SendGetRequestAsync("https://api.nordvpn.com/v1/servers?filters[servers_technologies][id]=35&filters[country_id]=", countryId); ;
+            return await SendGetRequestAsync(_baseUrl + SERVERS_ENDPOINT, countryId); ;
         }
 
         public async Task<string> GetAllServerByProtocolListAsync(int vpnProtocol)
         {
-            return await SendGetRequestAsync("https://api.nordvpn.com/v1/servers?filters[servers_technologies][id]=", vpnProtocol);
+            return await SendGetRequestAsync(_baseUrl + SERVERS_BY_COUNTRY, vpnProtocol);
         }
 
         private async Task<string> SendGetRequestAsync(

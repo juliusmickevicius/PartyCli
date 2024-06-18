@@ -1,6 +1,8 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using partycli.Infrastructure.Repository;
+using partycli.Options;
 using partycli.Services.Server;
 
 namespace partycli
@@ -9,13 +11,17 @@ namespace partycli
     {
         static void Main(string[] args)
         {
-            var host = Host.CreateDefaultBuilder(args)
-                .ConfigureServices((services =>
-                {
-                    services.AddSingleton<IServerService, ServerService>();
-                    services.AddSingleton<App>();
-                    services.AddSingleton<ISettingsRepository, SettingsRepository>();
-                }));
+            var host = Host.CreateApplicationBuilder(args);
+
+            host.Services.AddSingleton<IServerService, ServerService>();
+            host.Services.AddSingleton<App>();
+            host.Services.AddSingleton<ISettingsRepository, SettingsRepository>();
+
+            host.Configuration.AddJsonFile("appsettings.json", false);
+
+            host.Services.Configure<ApiSettings>(options => host.Configuration.GetSection(nameof(ApiSettings)).Bind(options));
+
+            host.Services.AddOptions<ApiSettings>().ValidateOnStart();
 
             var app = host.Build();
 

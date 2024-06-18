@@ -15,6 +15,7 @@ namespace partycli
     {
         IServerService _serverService;
         ISettingsRepository _settingsRepository;
+
         public App(IServerService serverService, ISettingsRepository settingsRepository)
         {
             _serverService = serverService;
@@ -147,24 +148,6 @@ namespace partycli
             }
 
             _settingsRepository.InsertValue("log", JsonConvert.SerializeObject(currentLog));
-        }
-
-        static void storeValue(string name, string value, bool writeToConsole = true)
-        {
-            try
-            {
-                var settings = Properties.Settings.Default;
-                settings[name] = value;
-                settings.Save();
-                if (writeToConsole)
-                {
-                    Console.WriteLine("Changed " + name + " to " + value);
-                }
-            }
-            catch
-            {
-                Console.WriteLine("Error: Couldn't save " + name + ". Check if command was input correctly.");
-            }
         }
     }
 

@@ -168,6 +168,7 @@
     <Compile Include="Domain\ServerModel.cs" />
     <Compile Include="Infrastructure\Repository\ISettingsRepository.cs" />
     <Compile Include="Infrastructure\Repository\SettingsRepository.cs" />
+    <Compile Include="Options\ApiSettings.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
@@ -181,7 +182,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Config\appsettings.json" />
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
