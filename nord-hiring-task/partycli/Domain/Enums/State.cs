@@ -1,6 +1,6 @@
 ﻿namespace partycli.Domain.Enums
 {
-    enum States
+    public enum State
     {
         none = 0,
         server_list = 1,

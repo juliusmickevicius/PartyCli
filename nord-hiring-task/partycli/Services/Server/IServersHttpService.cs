@@ -2,10 +2,9 @@
 
 namespace partycli.Services.Server
 {
-    public interface IServerService
+    public interface IServersHttpService
     {
-        Task<string> GetAllServersListAsync();
-        Task<string> GetAllServerByCountryListAsync(int countryId);
+        Task<string> GetAllServerByCountryListAsync(int? countryId = null);
         Task<string> GetAllServerByProtocolListAsync(int vpnProtocol);
     }
 }

@@ -17,5 +17,10 @@ namespace partycli.Infrastructure.Repository
                 Console.WriteLine("Error: Couldn't save " + name + ". Check if command was input correctly.");
             }
         }
+
+        public string GetServerListData()
+        {
+            return Properties.Settings.Default.serverlist;
+        }
     }
 }

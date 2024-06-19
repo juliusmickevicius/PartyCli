@@ -3,5 +3,6 @@
     public interface ISettingsRepository
     {
         void InsertValue(string name, string value);
+        string GetServerListData();
     }
 }
