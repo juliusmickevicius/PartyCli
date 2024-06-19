@@ -18,7 +18,6 @@ namespace partycli.Infrastructure.Repository.Settings
             }
             catch(Exception ex)
             {
-                Console.WriteLine("Error: Couldn't save " + name + ". Check if command was input correctly.");
                 Console.WriteLine(ex.ToString());
             }
         }
@@ -31,7 +30,6 @@ namespace partycli.Infrastructure.Repository.Settings
         public void UpsertLog(LogModel log)
         {
             var currentLog = new List<LogModel>();
-
             var logData = _settingsContext.log;
 
             if (!string.IsNullOrEmpty(logData))

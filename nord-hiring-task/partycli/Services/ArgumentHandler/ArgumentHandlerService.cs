@@ -22,46 +22,50 @@ namespace partycli.Services.ArgumentHandlerService
             _messageDisplayService = messageDisplayService;
         }
 
-        public async Task<State> ProcessArgumentsAsync(ArgumentOptions args)
+        public async Task<State> ProcessArgumentsAsync(ArgumentOptions argument)
         {
             var currentState = State.none;
-            return await ProcessPrimaryArgument(currentState, args);
-        }
+            var serverList = string.Empty;
 
-        private async Task<State> ProcessPrimaryArgument(State currentState, ArgumentOptions argument)
-        {
-            string serverList = string.Empty;
-
-            //Since the only available primary argument at this time is server_list, there is no need to cater further
             if (currentState is State.none &&
-                argument.PrimaryArgument == ParentArgument.server_list)
+                argument.PrimaryArgument is ParentArgument.server_list)
             {
                 currentState = State.server_list;
 
-                if (!AreAnySubTypesSelected(argument))
+                serverList = !AreAnySubTypesSelected(argument)
+                    ? await _serverService.GetAllServerByCountryListAsync() 
+                    : await ProcessSubArgumentsAsync(argument);
+            }
+
+            if (string.IsNullOrWhiteSpace(serverList))
+            {
+                if (argument.IsLocal)
                 {
-                    serverList = await _serverService.GetAllServerByCountryListAsync();          
+                    Console.WriteLine("Error: There are no server data in local storage");
                 }
                 else
                 {
-                    serverList = await ProcessSecondaryArgument(argument);
+                    Console.WriteLine("Error: No server data available");
                 }
-            }
 
-            //We dont need to log and display server list if its taken from local data storage
-            if(!string.IsNullOrWhiteSpace(serverList) || !argument.IsLocal)
-                SaveLogAndDisplayServerList(serverList);
+                return State.none;
+            }
+            else
+            {
+                SaveLogAndServers(serverList);
+                _messageDisplayService.DisplayLine(serverList);
+            }
 
             return currentState;
         }
 
-        private async Task<string> ProcessSecondaryArgument(ArgumentOptions argumentOptions)
+        private async Task<string> ProcessSubArgumentsAsync(ArgumentOptions argumentOptions)
         {
             string serverList = string.Empty;
 
             if (argumentOptions.IsLocal)
             {
-                GetAndDisplayServers();
+                serverList = _settingsRepository.GetServerListData();
             }
             else if (argumentOptions.IsFrance)
             {
@@ -75,32 +79,16 @@ namespace partycli.Services.ArgumentHandlerService
             return serverList;
         }
 
-        private void GetAndDisplayServers()
+        private void SaveLogAndServers(string serverList)
         {
-            var serverData = _settingsRepository.GetServerListData();
-
-            if (!string.IsNullOrEmpty(serverData))
-            {
-                _messageDisplayService.DisplayLine(serverData);
-            }
-            else
-            {
-                Console.WriteLine("Error: There are no server data in local storage");
-            }
-        }
-
-        private void SaveLogAndDisplayServerList(string serverList)
-        {
-            _settingsRepository.Upsert("serverlist", serverList);
-
             var currentLog = new LogModel
             {
                 Action = "Saved new server list: " + serverList,
                 Time = DateTime.Now
             };
 
+            _settingsRepository.Upsert("serverlist", serverList);
             _settingsRepository.UpsertLog(currentLog);
-            _messageDisplayService.DisplayLine(serverList);
         }
 
         private bool AreAnySubTypesSelected(ArgumentOptions options)

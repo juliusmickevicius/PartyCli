@@ -21,14 +21,9 @@ namespace partycli.Services.Server
 
         public async Task<string> GetAllServerByCountryListAsync(int? countryId = null)
         {
-            if (countryId == null)
-            {
-                return await SendGetRequestAsync(_baseUrl + SERVERS_ENDPOINT, null);
-            }
-            else
-            {
-                return await SendGetRequestAsync(_baseUrl + SERVERS_ENDPOINT, countryId);
-            }
+            return countryId is null
+                ? await SendGetRequestAsync(_baseUrl + SERVERS_ENDPOINT, null)
+                : await SendGetRequestAsync(_baseUrl + SERVERS_ENDPOINT, countryId);
         }
 
         public async Task<string> GetAllServerByProtocolListAsync(int vpnProtocol)
@@ -45,14 +40,9 @@ namespace partycli.Services.Server
             if (string.IsNullOrWhiteSpace(requestUrl))
                 throw new ArgumentNullException(requestUrl);
 
-            if (value is null)
-            {
-                request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
-            }
-            else
-            {
-                request = new HttpRequestMessage(HttpMethod.Get, requestUrl + value);
-            }
+            request = value is null 
+                ? new HttpRequestMessage(HttpMethod.Get, requestUrl)
+                : new HttpRequestMessage(HttpMethod.Get, requestUrl + value);
 
             var response = await client.SendAsync(request);
             var responseString = await response.Content.ReadAsStringAsync();
