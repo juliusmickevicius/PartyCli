@@ -1,13 +1,11 @@
 ﻿using partycli.Domain.Enums;
 using System;
 using System.Threading.Tasks;
-using partycli.Infrastructure.Repository;
 using partycli.Services.Server;
-using Newtonsoft.Json;
 using partycli.Domain;
-using System.Collections.Generic;
-using partycli.Services.Logger;
-using partycli.Domain.Constants;
+using partycli.Options;
+using partycli.Infrastructure.Repository.Settings;
+using partycli.Services.MessageDisplay;
 
 namespace partycli.Services.ArgumentHandlerService
 {
@@ -15,67 +13,66 @@ namespace partycli.Services.ArgumentHandlerService
     {
         private readonly IServersHttpService _serverService;
         private readonly ISettingsRepository _settingsRepository;
-        private readonly ILogger _logger;
+        private readonly IMessageDisplayService _messageDisplayService;
 
-        public ArgumentHandlerService(IServersHttpService serverService, ISettingsRepository settingsRepository, ILogger logger)
+        public ArgumentHandlerService(IServersHttpService serverService, ISettingsRepository settingsRepository, IMessageDisplayService messageDisplayService)
         {
             _serverService = serverService;
             _settingsRepository = settingsRepository;
-            _logger = logger;
+            _messageDisplayService = messageDisplayService;
         }
 
-        public async Task<State> ProcessArgumentsAsync(string[] args)
+        public async Task<State> ProcessArgumentsAsync(ArgumentOptions args)
         {
             var currentState = State.none;
             return await ProcessPrimaryArgument(currentState, args);
         }
 
-        private async Task<State> ProcessPrimaryArgument(State currentState, string[] argument)
+        private async Task<State> ProcessPrimaryArgument(State currentState, ArgumentOptions argument)
         {
             string serverList = string.Empty;
 
+            //Since the only available primary argument at this time is server_list, there is no need to cater further
             if (currentState is State.none &&
-                argument[0] == ArgumentConstants.PRIMARY_ARG_SERVER_LIST)
+                argument.PrimaryArgument == ParentArgument.server_list)
             {
                 currentState = State.server_list;
 
-                if (argument.Length is 1)
+                if (!AreAnySubTypesSelected(argument))
                 {
-                    serverList = await _serverService.GetAllServerByCountryListAsync();
-                    LogAndDisplayServerList(serverList);
+                    serverList = await _serverService.GetAllServerByCountryListAsync();          
                 }
                 else
                 {
-                    await ProcessSecondaryArgument(argument);
+                    serverList = await ProcessSecondaryArgument(argument);
                 }
             }
+
+            //We dont need to log and display server list if its taken from local data storage
+            if(!string.IsNullOrWhiteSpace(serverList) || !argument.IsLocal)
+                SaveLogAndDisplayServerList(serverList);
 
             return currentState;
         }
 
-        private async Task ProcessSecondaryArgument(string[] args)
+        private async Task<string> ProcessSecondaryArgument(ArgumentOptions argumentOptions)
         {
+            string serverList = string.Empty;
 
-            for (int i = 1; i < args.Length; i++)
+            if (argumentOptions.IsLocal)
             {
-                if (args[i] == ArgumentConstants.SECONDARY_ARG_LOCAL)
-                {
-                    GetAndDisplayServers();
-                    break;
-                }
-                else if (args[i] == ArgumentConstants.SECONDARY_ARG_CNTR_FRANCE)
-                {
-                    var serverList = await _serverService.GetAllServerByCountryListAsync((int)Protocol.Tcp);
-                    LogAndDisplayServerList(serverList);
-                    break;
-                }
-                else if (args[i] == ArgumentConstants.SECONDARY_ARG_PRTCL_TCP)
-                {
-                    var serverList = await _serverService.GetAllServerByProtocolListAsync((int)Protocol.Tcp);
-                    LogAndDisplayServerList(serverList);
-                    break;
-                }
+                GetAndDisplayServers();
             }
+            else if (argumentOptions.IsFrance)
+            {
+                serverList = await _serverService.GetAllServerByCountryListAsync((int)Country.France);
+            }
+            else if (argumentOptions.IsTcp)
+            {
+                serverList = await _serverService.GetAllServerByProtocolListAsync((int)Protocol.Tcp);
+            }
+
+            return serverList;
         }
 
         private void GetAndDisplayServers()
@@ -84,7 +81,7 @@ namespace partycli.Services.ArgumentHandlerService
 
             if (!string.IsNullOrEmpty(serverData))
             {
-                displayList(serverData);
+                _messageDisplayService.DisplayLine(serverData);
             }
             else
             {
@@ -92,28 +89,23 @@ namespace partycli.Services.ArgumentHandlerService
             }
         }
 
-        private void LogAndDisplayServerList(string serverList)
+        private void SaveLogAndDisplayServerList(string serverList)
         {
-            _settingsRepository.InsertValue("serverlist", serverList);
-            SaveLog("Saved new server list: " + serverList);
-            displayList(serverList);
-        }
+            _settingsRepository.Upsert("serverlist", serverList);
 
-        static void displayList(string serverListString)
-        {
-            var serverlist = JsonConvert.DeserializeObject<List<ServerModel>>(serverListString);
-            Console.WriteLine("Server list: ");
-            for (var index = 0; index < serverlist.Count; index++)
+            var currentLog = new LogModel
             {
-                Console.WriteLine("Name: " + serverlist[index].Name);
-            }
-            Console.WriteLine("Total servers: " + serverlist.Count);
+                Action = "Saved new server list: " + serverList,
+                Time = DateTime.Now
+            };
+
+            _settingsRepository.UpsertLog(currentLog);
+            _messageDisplayService.DisplayLine(serverList);
         }
 
-        private void SaveLog(string action)
+        private bool AreAnySubTypesSelected(ArgumentOptions options)
         {
-            var currentLog = _logger.GetLoggedMessage(action);
-            _settingsRepository.InsertValue("log", JsonConvert.SerializeObject(currentLog));
+            return options.IsFrance || options.IsTcp || options.IsLocal;
         }
     }
 }
