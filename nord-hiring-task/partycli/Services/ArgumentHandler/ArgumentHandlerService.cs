@@ -6,6 +6,7 @@ using partycli.Domain;
 using partycli.Options;
 using partycli.Infrastructure.Repository.Settings;
 using partycli.Services.MessageDisplay;
+using partycli.Utilities;
 
 namespace partycli.Services.ArgumentHandlerService
 {
@@ -32,9 +33,9 @@ namespace partycli.Services.ArgumentHandlerService
             {
                 currentState = State.server_list;
 
-                serverList = !AreAnySubTypesSelected(argument)
-                    ? await _serverService.GetAllServerByCountryListAsync() 
-                    : await ProcessSubArgumentsAsync(argument);
+                serverList = AreAnySubTypesSelected(argument)
+                    ? await ProcessChildArgumentsAsync(argument)
+                    : await _serverService.GetAllServerByCountryListAsync();
             }
 
             if (string.IsNullOrWhiteSpace(serverList))
@@ -53,13 +54,13 @@ namespace partycli.Services.ArgumentHandlerService
             else
             {
                 SaveLogAndServers(serverList);
-                _messageDisplayService.DisplayLine(serverList);
+                _messageDisplayService.DisplayServerList(serverList);
             }
 
             return currentState;
         }
 
-        private async Task<string> ProcessSubArgumentsAsync(ArgumentOptions argumentOptions)
+        private async Task<string> ProcessChildArgumentsAsync(ArgumentOptions argumentOptions)
         {
             string serverList = string.Empty;
 
@@ -81,13 +82,8 @@ namespace partycli.Services.ArgumentHandlerService
 
         private void SaveLogAndServers(string serverList)
         {
-            var currentLog = new LogModel
-            {
-                Action = "Saved new server list: " + serverList,
-                Time = DateTime.Now
-            };
-
-            _settingsRepository.Upsert("serverlist", serverList);
+            var currentLog = Logging.GetCurrentLog("Saved new server list: " + serverList);
+            _settingsRepository.Insert("serverlist", serverList);
             _settingsRepository.UpsertLog(currentLog);
         }
 

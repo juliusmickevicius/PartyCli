@@ -218,6 +218,7 @@
     </Compile>
     <Compile Include="Services\Server\IServersHttpService.cs" />
     <Compile Include="Services\Server\ServerHttpService.cs" />
+    <Compile Include="Utilities\Logging.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

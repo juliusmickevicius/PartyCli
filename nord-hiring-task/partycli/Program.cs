@@ -19,7 +19,7 @@ namespace partycli
             host.Services.AddScoped<IServersHttpService, ServerHttpService>();
             host.Services.AddScoped<IArgumentHandlerService, ArgumentHandlerService>();
             host.Services.AddScoped<IMessageDisplayService, MessageDisplayService>();
-            host.Services.AddScoped<App>();
+            host.Services.AddSingleton<App>();
 
             host.Configuration.AddJsonFile("appsettings.json", false);
 

@@ -17,7 +17,8 @@ namespace partycli.Tests.Services
         Mock<ISettingsRepository> _settingsRepositoryMock;
         IArgumentHandlerService _argumentHandlerService;
 
-        public ArgumentHandlerTests()
+        [SetUp]
+        public void Setup()
         {
             _serversHttpServiceMock = new Mock<IServersHttpService>();
             _messageDisplayService = new Mock<IMessageDisplayService>();
@@ -25,15 +26,8 @@ namespace partycli.Tests.Services
             _argumentHandlerService = new ArgumentHandlerService(_serversHttpServiceMock.Object, _settingsRepositoryMock.Object, _messageDisplayService.Object);
         }
 
-        [SetUp]
-        public void Setup()
-        {
-            //_settingsRepositoryMock.se
-            _serversHttpServiceMock.Invocations.Clear();
-        }
-
         [Test]
-        public async Task ProcessArguments_Provide_valid_arg_should_return_server_list()
+        public async Task ProcessArguments_Provide_main_arg_Should_return_server_list()
         {
             //Arrange
             _settingsRepositoryMock.Setup(x => x.GetServerListData()).Returns("Fake Value");
@@ -48,10 +42,9 @@ namespace partycli.Tests.Services
         }
 
         [Test]
-        public async Task ProcessArguments_To_servers_received_Should_return_none()
+        public async Task ProcessArguments_No_servers_received_Should_return_none()
         {
             //Arrange
-            _settingsRepositoryMock.Setup(x => x.GetServerListData()).Returns("Fake Value");
             var args = new ArgumentOptions() { PrimaryArgument = ParentArgument.server_list };
 
             //Act
@@ -59,6 +52,48 @@ namespace partycli.Tests.Services
 
             //Assert
             Assert.AreEqual(State.none, state);
+        }
+
+        [Test]
+        public async Task ProcessArguments_Ask_for_tcp_Should_return_server_list()
+        {
+            //Arrange
+            _serversHttpServiceMock.Setup(x => x.GetAllServerByProtocolListAsync((int)Protocol.Tcp)).ReturnsAsync("Fake servers");
+            var args = new ArgumentOptions() { PrimaryArgument = ParentArgument.server_list, IsTcp = true };
+
+            //Act
+            var state = await _argumentHandlerService.ProcessArgumentsAsync(args);
+
+            //Assert
+            Assert.AreEqual(State.server_list, state);
+        }
+
+        [Test]
+        public async Task ProcessArguments_Ask_for_france_Should_return_server_list()
+        {
+            //Arrange
+            _serversHttpServiceMock.Setup(x => x.GetAllServerByCountryListAsync((int)Country.France)).ReturnsAsync("Fake servers");
+            var args = new ArgumentOptions() { PrimaryArgument = ParentArgument.server_list, IsFrance = true };
+
+            //Act
+            var state = await _argumentHandlerService.ProcessArgumentsAsync(args);
+
+            //Assert
+            Assert.AreEqual(State.server_list, state);
+        }
+
+        [Test]
+        public async Task ProcessArguments_Ask_for_local_Should_return_server_list()
+        {
+            //Arrange
+            _settingsRepositoryMock.Setup(x => x.GetServerListData()).Returns("Fake Value");
+            var args = new ArgumentOptions() { PrimaryArgument = ParentArgument.server_list, IsLocal = true };
+
+            //Act
+            var state = await _argumentHandlerService.ProcessArgumentsAsync(args);
+
+            //Assert
+            Assert.AreEqual(State.server_list, state);
         }
     }
 }

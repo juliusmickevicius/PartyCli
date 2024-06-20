@@ -8,15 +8,16 @@ namespace partycli.Services.Server
 {
     public class ServerHttpService : IServersHttpService
     {
-        private static readonly HttpClient client = new HttpClient();
         private const string SERVERS_ENDPOINT = "/v1/servers?filters[servers_technologies][id]=35&filters[country_id]=";
         private const string SERVERS_BY_COUNTRY_ENDPOINT = "/v1/servers?filters[servers_technologies][id]=";
 
+        private readonly HttpClient _httpClient;
         private readonly string _baseUrl;
 
         public ServerHttpService(IOptions<ApiSettings> apiSettings)
         {
             _baseUrl = apiSettings.Value.NordVpnBaseUri;
+            _httpClient = new HttpClient();
         }
 
         public async Task<string> GetAllServerByCountryListAsync(int? countryId = null)
@@ -44,7 +45,7 @@ namespace partycli.Services.Server
                 ? new HttpRequestMessage(HttpMethod.Get, requestUrl)
                 : new HttpRequestMessage(HttpMethod.Get, requestUrl + value);
 
-            var response = await client.SendAsync(request);
+            var response = await _httpClient.SendAsync(request);
             var responseString = await response.Content.ReadAsStringAsync();
             return responseString;
         }

@@ -4,7 +4,7 @@ namespace partycli.Infrastructure.Repository.Settings
 {
     public interface ISettingsRepository
     {
-        void Upsert(string name, string value);
+        void Insert(string name, string value);
         string GetServerListData();
 
         string GetLogData();

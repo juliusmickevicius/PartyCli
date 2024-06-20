@@ -7,7 +7,7 @@ namespace partycli.Services.MessageDisplay
 {
     public class MessageDisplayService : IMessageDisplayService
     {
-        public void DisplayLine(string serverListString)
+        public void DisplayServerList(string serverListString)
         {
             var serverlist = JsonConvert.DeserializeObject<List<ServerModel>>(serverListString);
 

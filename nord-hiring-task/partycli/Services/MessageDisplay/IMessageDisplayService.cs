@@ -2,6 +2,6 @@
 {
     public interface IMessageDisplayService
     {
-        void DisplayLine(string serverListString);
+        void DisplayServerList(string serverListString);
     }
 }

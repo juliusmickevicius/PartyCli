@@ -7,9 +7,10 @@ namespace partycli.Infrastructure.Repository.Settings
 {
     public class SettingsRepository : ISettingsRepository
     {
+        private const string LOG_NAME = "log";
         private Properties.Settings _settingsContext = Properties.Settings.Default;
 
-        public void Upsert(string name, string value)
+        public void Insert(string name, string value)
         {
             try
             {
@@ -18,6 +19,7 @@ namespace partycli.Infrastructure.Repository.Settings
             }
             catch(Exception ex)
             {
+                Console.WriteLine("Error: Failed to save data");
                 Console.WriteLine(ex.ToString());
             }
         }
@@ -39,7 +41,7 @@ namespace partycli.Infrastructure.Repository.Settings
 
             currentLog.Add(log);
 
-            Upsert("log", JsonConvert.SerializeObject(currentLog));
+            Insert(LOG_NAME, JsonConvert.SerializeObject(currentLog));
         }
 
         public string GetLogData()
