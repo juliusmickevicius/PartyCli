@@ -9,13 +9,13 @@ namespace partycli.Options
         [Value(0, MetaName = "command", Required = true, HelpText = "The primary command.")]
         public ParentArgument PrimaryArgument { get; set; }
 
-        [Option("local", Required = false, HelpText = "Use local server list.")]
+        [Option("local", Required = false, HelpText = "Get local server list.")]
         public bool IsLocal { get; set; }
 
-        [Option("TCP", Required = false, HelpText = "Use TCP protocol.")]
+        [Option("TCP", Required = false, HelpText = "Get servers by TCP protocol.")]
         public bool IsTcp { get; set; }
 
-        [Option("france", Required = false, HelpText = "Use servers in France.")]
+        [Option("france", Required = false, HelpText = "Get servers in France.")]
         public bool IsFrance { get; set; }
     }
 }

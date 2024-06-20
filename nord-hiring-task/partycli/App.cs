@@ -3,6 +3,7 @@ using partycli.Domain.Enums;
 using partycli.Options;
 using partycli.Services.ArgumentHandlerService;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace partycli
@@ -20,11 +21,17 @@ namespace partycli
         {
             var currentState = State.none;
 
-            await Parser.Default.ParseArguments<ArgumentOptions>(args)
-                .WithParsedAsync(async o =>
-                {
-                    currentState = await _commandProcessorService.ProcessArgumentsAsync(o);
-                });
+            var parser = await Parser.Default.ParseArguments<ArgumentOptions>(args)
+            .WithParsedAsync(async o =>
+            {
+                currentState = await _commandProcessorService.ProcessArgumentsAsync(o);
+            });
+
+            parser.WithNotParsed((er) => 
+            {
+                Console.WriteLine($"Cannot parse message due to error: {er.FirstOrDefault()}");
+                Console.WriteLine();
+            });
 
             if (currentState == State.none)
             {
@@ -36,7 +43,7 @@ namespace partycli
 
             Console.Read();
 
-            //this code was not documented to be called ¯\_(ツ)_/¯
+            //this code was not documented ¯\_(ツ)_/¯
             //        if (arg == "config")
             //        {
             //            currentState = States.config;
@@ -57,7 +64,6 @@ namespace partycli
             //            name = null;
             //        }
             //    }
-
         }
     }
 }
