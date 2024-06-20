@@ -15,10 +15,10 @@ namespace partycli
         {
             var host = Host.CreateApplicationBuilder(args);
 
-            host.Services.AddScoped<ISettingsRepository, SettingsRepository>();
-            host.Services.AddScoped<IServersHttpService, ServerHttpService>();
-            host.Services.AddScoped<IArgumentHandlerService, ArgumentHandlerService>();
-            host.Services.AddScoped<IMessageDisplayService, MessageDisplayService>();
+            host.Services.AddSingleton<ISettingsRepository, SettingsRepository>();
+            host.Services.AddSingleton<IServersHttpService, ServerHttpService>();
+            host.Services.AddSingleton<IArgumentHandlerService, ArgumentHandlerService>();
+            host.Services.AddTransient<IMessageDisplayService, MessageDisplayService>();
             host.Services.AddSingleton<App>();
 
             host.Configuration.AddJsonFile("appsettings.json", false);

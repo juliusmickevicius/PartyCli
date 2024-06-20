@@ -2,7 +2,6 @@
 using System;
 using System.Threading.Tasks;
 using partycli.Services.Server;
-using partycli.Domain;
 using partycli.Options;
 using partycli.Infrastructure.Repository.Settings;
 using partycli.Services.MessageDisplay;

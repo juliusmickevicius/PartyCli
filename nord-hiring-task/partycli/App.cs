@@ -42,28 +42,6 @@ namespace partycli
             }
 
             Console.Read();
-
-            //this code was not documented ¯\_(ツ)_/¯
-            //        if (arg == "config")
-            //        {
-            //            currentState = States.config;
-            //        }
-            //    }
-            //    else if (currentState == States.config)
-            //    {
-            //        if (name == null)
-            //        {
-            //            name = arg;
-            //        }
-            //        else
-            //        {
-            //            _settingsRepository.InsertValue(proccessName(name), arg);
-            //            Console.WriteLine("Changed " + proccessName(name) + " to " + arg);
-
-            //            log("Changed " + proccessName(name) + " to " + arg);
-            //            name = null;
-            //        }
-            //    }
         }
     }
 }
